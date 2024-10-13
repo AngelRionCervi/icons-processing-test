@@ -1,5 +1,5 @@
-import singleThreadExample from "./single-thread/main.ts";
-import multiThreadExample from "./multi-thread/main.ts";
+import singleThreadExample from "./benchmark/single-thread/main.ts";
+import multiThreadExample from "./benchmark/multi-thread/main.ts";
 
 const normalDataSetPath = "./icons/set-normal";
 const hugeDataSetPath = "./icons/set-huge";
