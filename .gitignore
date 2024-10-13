@@ -1,3 +1,4 @@
 .vscode/**
 icons
 !icons/source
+.DS_Store
