@@ -1,11 +1,12 @@
 import * as fs from "node:fs";
+import {
+  HUGE_DATA_SET_PATH,
+  HUGE_SET_NUMBER_OF_COPY,
+  NORMAL_DATA_SET_PATH,
+  RAW_ICON_PATH,
+} from "./constants.ts";
 
 console.log("Generating data sets...");
-
-const HUGE_DATA_SET_PATH = "./icons/set-huge";
-const NORMAL_DATA_SET_PATH = "./icons/set-normal";
-const RAW_ICON_PATH = "./icons/source";
-const NUMBER_OF_COPY = 25;
 
 const setPaths = [HUGE_DATA_SET_PATH, NORMAL_DATA_SET_PATH];
 
@@ -23,12 +24,12 @@ const topDirs = [...Deno.readDirSync(RAW_ICON_PATH)]
 
 function generateNormalSet() {
   topDirs.forEach((dir, index) => {
-    fs.cpSync(`${RAW_ICON_PATH}/${dir}`, `${NORMAL_DATA_SET_PATH}/${dir}-${index}`);
+    fs.cpSync(`${RAW_ICON_PATH}/${dir}`, `${NORMAL_DATA_SET_PATH}/${dir}`);
   });
 }
 
 function generateHugeSet() {
-  for (let i = 0; i < NUMBER_OF_COPY; i++) {
+  for (let i = 0; i < HUGE_SET_NUMBER_OF_COPY; i++) {
     topDirs.forEach((dir, index) => {
       fs.cpSync(`${RAW_ICON_PATH}/${dir}`, `${HUGE_DATA_SET_PATH}/${dir}-${i}-${index}`);
     });

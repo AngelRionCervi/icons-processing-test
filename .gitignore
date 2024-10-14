@@ -1,4 +1,7 @@
 .vscode/**
 icons
 !icons/source
+dist/benchmark-single
+dist/benchmark-multi
+dist/prod
 .DS_Store

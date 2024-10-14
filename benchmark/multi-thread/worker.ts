@@ -1,39 +1,6 @@
-import * as parser from "npm:node-html-parser";
-import type { HTMLElement } from "npm:node-html-parser";
+import { nameTransformers, processSvgFile } from "../../utils/utils.ts";
 
-const nameTransformers = {
-  typeDir: (name: string) => name.toLowerCase().substring(2, Infinity).replaceAll(" ", "-"),
-  iconDir: (name: string) => name.toLowerCase().replaceAll(" ", "-"),
-  svg: (name: string) =>
-    name
-      .toLowerCase()
-      .replace("type=", "")
-      .replace("size=", "")
-      .replaceAll(",", "")
-      .replaceAll(" ", "-"),
-};
-
-async function processSvgFile(svgPath: string) {
-  const svgContent = await Deno.readTextFile(svgPath);
-
-  const root = parser.parse(svgContent);
-  const svg = root.querySelector("svg");
-
-  if (!svg) return;
-
-  svg.removeAttribute("width");
-  svg.removeAttribute("height");
-
-  const paths = svg.querySelectorAll("path");
-
-  paths.forEach((path: HTMLElement) => {
-    path.setAttribute("fill", "currentColor");
-  });
-
-  const newSvgContent = root.toString();
-
-  return newSvgContent;
-}
+const partialTokenMap = new Map<string, string>();
 
 async function processDirs(dirPaths: string[], processedPath: string) {
   for (const typeDirEntry of dirPaths) {
@@ -56,6 +23,9 @@ async function processDirs(dirPaths: string[], processedPath: string) {
           const newIconPath = `${processedPath}/${newIconTypeDirName}/${newIconDirName}`;
           await Deno.mkdir(newIconPath, { recursive: true });
           await Deno.writeTextFile(`${newIconPath}/${newSvgName}`, newSvgContent, { create: true });
+
+          const tokenKey = `${newIconTypeDirName}-${newIconDirName}-${newSvgName}`;
+          partialTokenMap.set(tokenKey, iconPath);
         }
       }
     }
@@ -67,6 +37,6 @@ self.onmessage = async (event) => {
   const { dirPaths, processedPath } = event.data;
   await processDirs(dirPaths, processedPath);
   // @ts-ignore: lack of types in deno
-  self.postMessage("done");
+  self.postMessage(partialTokenMap);
   self.close();
 };

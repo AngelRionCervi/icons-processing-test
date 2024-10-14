@@ -1,55 +1,18 @@
 import process from "node:process";
-import * as parser from "npm:node-html-parser";
+import { PROCESSED_SINGLE_ICON_PATH } from "../../constants.ts";
+import { genIconMapFile } from "../../utils/codeGen.ts";
+import { init, nameTransformers, processSvgFile } from "../../utils/utils.ts";
 
-const PROCESSED_ICON_PATH = "./icons/processed-single";
-
-const nameTransformers = {
-  typeDir: (name: string) => name.toLowerCase().substring(2, Infinity).replaceAll(" ", "-"),
-  iconDir: (name: string) => name.toLowerCase().replaceAll(" ", "-"),
-  svg: (name: string) =>
-    name
-      .toLowerCase()
-      .replace("type=", "")
-      .replace("size=", "")
-      .replaceAll(",", "")
-      .replaceAll(" ", "-"),
-};
-
-async function init() {
-  const processedDirExists = !!(await Deno.stat(PROCESSED_ICON_PATH).catch(() => null));
-  if (processedDirExists) {
-    await Deno.remove(PROCESSED_ICON_PATH, { recursive: true });
-  }
-  await Deno.mkdir(PROCESSED_ICON_PATH);
-}
-
-async function processSvgFile(svgPath: string) {
-  const svgContent = await Deno.readTextFile(svgPath);
-
-  const root = parser.parse(svgContent);
-  const svg = root.querySelector("svg");
-
-  if (!svg) return;
-
-  svg.removeAttribute("width");
-  svg.removeAttribute("height");
-
-  const paths = svg.querySelectorAll("path");
-
-  paths.forEach((path) => {
-    path.setAttribute("fill", "currentColor");
-  });
-
-  const newSvgContent = root.toString();
-
-  return newSvgContent;
-}
-
-export default async function main(dataSetPath: string) {
+export default async function main(
+  dataSetPath: string,
+  processedPath: string = PROCESSED_SINGLE_ICON_PATH,
+) {
   const startTime = performance.now();
+
+  const tokenMap = new Map<string, string>();
   let topDirCount = 0;
 
-  await init();
+  await init(processedPath);
 
   for await (const typeDirEntry of Deno.readDir(dataSetPath)) {
     if (!typeDirEntry.isDirectory) continue;
@@ -72,13 +35,18 @@ export default async function main(dataSetPath: string) {
         const newSvgName = nameTransformers.svg(iconFileEntry.name);
 
         if (newSvgContent) {
-          const newIconPath = `${PROCESSED_ICON_PATH}/${newIconTypeDirName}/${newIconDirName}`;
+          const newIconPath = `${processedPath}/${newIconTypeDirName}/${newIconDirName}`;
           await Deno.mkdir(newIconPath, { recursive: true });
           await Deno.writeTextFile(`${newIconPath}/${newSvgName}`, newSvgContent, { create: true });
+
+          const tokenKey = `${newIconTypeDirName}-${newIconDirName}-${newSvgName}`;
+          tokenMap.set(tokenKey, iconPath);
         }
       }
     }
   }
+
+  await genIconMapFile(processedPath, tokenMap);
 
   const memoryUsageMb = process.memoryUsage.rss() / 1024 / 1024;
 

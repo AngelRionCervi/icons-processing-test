@@ -1,15 +1,20 @@
 import process from "node:process";
+import { MAX_THREAD, PROCESSED_MULTI_ICON_PATH } from "../../constants.ts";
+import { genIconMapFile } from "../../utils/codeGen.ts";
+import { init } from "../../utils/utils.ts";
 
-const PROCESSED_ICON_PATH = "./icons/processed-multi";
-
-export default async function main(dataSetPath: string) {
+export default async function main(dataSetPath: string, processedPath: string = PROCESSED_MULTI_ICON_PATH) {
   const startTime = performance.now();
+
+  await init(processedPath);
+
+  const tokenMap = new Map<string, string>();
 
   const topDirs = [...Deno.readDirSync(dataSetPath)]
     .filter((file) => file.isDirectory)
     .map((dir) => dir.name);
 
-  const coreCount = navigator.hardwareConcurrency;
+  const coreCount = Math.min(MAX_THREAD, navigator.hardwareConcurrency);
   const dirsPerWorker = Math.ceil(topDirs.length / coreCount);
   const dirsPerWorkerRemainder = topDirs.length % coreCount;
   const threadNumber = Math.min(coreCount, topDirs.length);
@@ -23,14 +28,24 @@ export default async function main(dataSetPath: string) {
     const start = i * dirsPerWorker;
     const end = start + dirsPerWorker;
     const dirPaths = topDirs.slice(start, end).map((dir) => `${dataSetPath}/${dir}`);
-    workerList[i].postMessage({ dirPaths, processedPath: PROCESSED_ICON_PATH });
+    workerList[i].postMessage({ dirPaths, processedPath });
   }
 
   const memoryUsageMb = process.memoryUsage.rss() / 1024 / 1024;
 
   await Promise.all(
-    workerList.map((worker) => new Promise((resolve) => (worker.onmessage = resolve))),
+    workerList.map((worker) => new Promise<void>((resolve) => {
+      worker.onmessage = (event) => {
+        const partialTokenMap = event.data;
+        partialTokenMap.forEach((value: string, key: string) => {
+          tokenMap.set(key, value);
+        });
+        resolve();
+      }
+    })),
   );
+
+  await genIconMapFile(processedPath, tokenMap);
 
   const endTime = performance.now();
   const perf = performance.measure("Execution time", { start: startTime, end: endTime });
