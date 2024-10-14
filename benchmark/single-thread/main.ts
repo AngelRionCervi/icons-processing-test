@@ -1,6 +1,6 @@
 import process from "node:process";
 import { PROCESSED_SINGLE_ICON_PATH } from "../../constants.ts";
-import { genIconMapFile } from "../../utils/codeGen.ts";
+import { genFiles } from "../../utils/codeGen.ts";
 import { init, nameTransformers, processSvgFile } from "../../utils/utils.ts";
 
 export default async function main(
@@ -47,7 +47,7 @@ export default async function main(
     }
   }
 
-  await genIconMapFile(processedPath, tokenMap);
+  await genFiles(processedPath, tokenMap);
 
   const memoryUsageMb = process.memoryUsage.rss() / 1024 / 1024;
 

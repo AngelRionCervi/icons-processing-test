@@ -1,6 +1,6 @@
 import process from "node:process";
 import { MAX_THREAD, PROCESSED_MULTI_ICON_PATH } from "../../constants.ts";
-import { genIconMapFile } from "../../utils/codeGen.ts";
+import { genFiles } from "../../utils/codeGen.ts";
 import { init } from "../../utils/utils.ts";
 
 export default async function main(dataSetPath: string, processedPath: string = PROCESSED_MULTI_ICON_PATH) {
@@ -45,7 +45,7 @@ export default async function main(dataSetPath: string, processedPath: string = 
     })),
   );
 
-  await genIconMapFile(processedPath, tokenMap);
+  await genFiles(processedPath, tokenMap);
 
   const endTime = performance.now();
   const perf = performance.measure("Execution time", { start: startTime, end: endTime });
