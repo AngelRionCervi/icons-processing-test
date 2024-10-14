@@ -22,10 +22,11 @@ async function processDirs(dirPaths: string[], processedPath: string) {
         if (newSvgContent) {
           const newIconPath = `${processedPath}/${newIconTypeDirName}/${newIconDirName}`;
           await Deno.mkdir(newIconPath, { recursive: true });
-          await Deno.writeTextFile(`${newIconPath}/${newSvgName}`, newSvgContent, { create: true });
+          const newIconFilePath = `${newIconPath}/${newSvgName}`;
+          await Deno.writeTextFile(newIconFilePath, newSvgContent, { create: true });
 
           const tokenKey = `${newIconTypeDirName}-${newIconDirName}-${newSvgName}`;
-          partialTokenMap.set(tokenKey, iconPath);
+          partialTokenMap.set(tokenKey, newIconFilePath);
         }
       }
     }

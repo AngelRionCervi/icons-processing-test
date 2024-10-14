@@ -23,7 +23,7 @@ const topDirs = [...Deno.readDirSync(RAW_ICON_PATH)]
   .map((dir) => dir.name);
 
 function generateNormalSet() {
-  topDirs.forEach((dir, index) => {
+  topDirs.forEach((dir) => {
     fs.cpSync(`${RAW_ICON_PATH}/${dir}`, `${NORMAL_DATA_SET_PATH}/${dir}`);
   });
 }

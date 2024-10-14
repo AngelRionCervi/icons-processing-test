@@ -3,5 +3,5 @@ icons
 !icons/source
 dist/benchmark-single
 dist/benchmark-multi
-dist/prod
+dist/dev-icons
 .DS_Store

@@ -25,22 +25,23 @@ export default async function main(
       if (!iconDirEntry.isDirectory) continue;
 
       const newIconDirName = nameTransformers.iconDir(iconDirEntry.name);
-      const iconsPath = `${iconsTypePath}/${iconDirEntry.name}`;
+      const iconsDirPath = `${iconsTypePath}/${iconDirEntry.name}`;
 
-      for await (const iconFileEntry of Deno.readDir(iconsPath)) {
+      for await (const iconFileEntry of Deno.readDir(iconsDirPath)) {
         if (!iconFileEntry.name.endsWith(".svg")) continue;
 
-        const iconPath = `${iconsPath}/${iconFileEntry.name}`;
+        const iconPath = `${iconsDirPath}/${iconFileEntry.name}`;
         const newSvgContent = await processSvgFile(iconPath);
         const newSvgName = nameTransformers.svg(iconFileEntry.name);
 
         if (newSvgContent) {
           const newIconPath = `${processedPath}/${newIconTypeDirName}/${newIconDirName}`;
+          const newIconFilePath = `${newIconPath}/${newSvgName}`;
           await Deno.mkdir(newIconPath, { recursive: true });
-          await Deno.writeTextFile(`${newIconPath}/${newSvgName}`, newSvgContent, { create: true });
+          await Deno.writeTextFile(newIconFilePath, newSvgContent, { create: true });
 
           const tokenKey = `${newIconTypeDirName}-${newIconDirName}-${newSvgName}`;
-          tokenMap.set(tokenKey, iconPath);
+          tokenMap.set(tokenKey, `./${newIconFilePath.split("/").slice(3).join("/")}`);
         }
       }
     }
@@ -54,7 +55,7 @@ export default async function main(
   const perf = performance.measure("Execution time", { start: startTime, end: endTime });
 
   const logData = [
-    ["Thread number", 1],
+    ["Thread count", 1],
     ["Total dirs", topDirCount],
     ["Duration (ms)", Math.round(perf.duration)],
     ["Memory usage (mb)", memoryUsageMb],

@@ -51,7 +51,7 @@ export default async function main(dataSetPath: string, processedPath: string = 
   const perf = performance.measure("Execution time", { start: startTime, end: endTime });
 
   const logData = [
-    ["Thread number", threadNumber],
+    ["Thread count", threadNumber],
     [
       "Dirs per worker",
       `${dirsPerWorker}${
