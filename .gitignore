@@ -4,4 +4,4 @@ icons
 dist/benchmark-single
 dist/benchmark-multi
 dist/dev-icons
-.DS_Store
+**/.DS_Store
