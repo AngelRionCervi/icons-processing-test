@@ -39,8 +39,7 @@ async function genIconExports(rootPath: string, iconMap: Map<string, string>) {
 async function genSvelteHelper(rootPath: string) {
   const helperContent = `<script lang="ts">
 	import { iconExports } from './iconExports';
-
-	type IconKey = keyof typeof iconExports;
+    import type { IconKey } from './iconTypes';
 
 	export let key: IconKey;
 
