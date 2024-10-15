@@ -3,7 +3,11 @@ import { camelCase } from "https://deno.land/x/case/mod.ts";
 export async function genFiles(iconPath: string, iconMap: Map<string, string>) {
   const rootPath = iconPath.split("/").slice(0, -1).join("/");
 
-  await Promise.all([genIconExports(rootPath, iconMap), genSvelteHelper(rootPath)]);
+  await Promise.all([
+    genIconExports(rootPath, iconMap),
+    genSvelteHelper(rootPath),
+    genTypesFile(rootPath),
+  ]);
 }
 
 async function genIconExports(rootPath: string, iconMap: Map<string, string>) {
@@ -52,4 +56,13 @@ async function genSvelteHelper(rootPath: string) {
 `;
 
   await Deno.writeTextFile(`${rootPath}/Icon.svelte`, helperContent);
+}
+
+async function genTypesFile(rootPath: string) {
+  const typesContent = `import { iconExports } from './iconExports.ts';
+  
+export type IconKey = keyof typeof iconExports;
+`;
+
+  await Deno.writeTextFile(`${rootPath}/iconTypes.ts`, typesContent);
 }
