@@ -59,7 +59,7 @@ async function genSvelteHelper(rootPath: string) {
 }
 
 async function genTypesFile(rootPath: string) {
-  const typesContent = `import { iconExports } from './iconExports.ts';
+  const typesContent = `import { iconExports } from './iconExports';
   
 export type IconKey = keyof typeof iconExports;
 `;
