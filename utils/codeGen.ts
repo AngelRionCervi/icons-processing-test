@@ -43,8 +43,13 @@ async function genSvelteHelper(rootPath: string) {
 	const svgRaw = iconExports[key];
 </script>
 
-<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-{@html svgRaw}`;
+{#if svgRaw}
+	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+	{@html svgRaw}
+{:else}
+	<img style="width:fit-content; height:fit-content;" src="#" alt="" />
+{/if}
+`;
 
   await Deno.writeTextFile(`${rootPath}/Icon.svelte`, helperContent);
 }
