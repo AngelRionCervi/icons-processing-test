@@ -1,4 +1,5 @@
 import * as parser from "npm:node-html-parser";
+import DOMpurify from "npm:isomorphic-dompurify";
 
 export async function init(processedPath: string) {
   const processedDirExists = !!(await Deno.stat(processedPath).catch(() => null));
@@ -23,13 +24,17 @@ export const nameTransformers = {
 export async function processSvgFile(svgPath: string) {
   const svgContent = await Deno.readTextFile(svgPath);
 
-  const root = parser.parse(svgContent);
+  const cleanSvgContent = DOMpurify.sanitize(svgContent);
+  const root = parser.parse(cleanSvgContent);
   const svg = root.querySelector("svg");
 
-  if (!svg) return;
+  if (!svg) {
+    throw new Error(`Svg parsing failed for ${svgPath}`);
+  }
 
   svg.removeAttribute("width");
   svg.removeAttribute("height");
+  svg.setAttribute("role", "img");
 
   const paths = svg.querySelectorAll("path");
 

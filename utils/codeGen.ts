@@ -38,17 +38,30 @@ async function genIconExports(rootPath: string, iconMap: Map<string, string>) {
 
 async function genSvelteHelper(rootPath: string) {
   const helperContent = `<script lang="ts">
+	import { onMount } from 'svelte';
 	import { iconExports } from './iconExports';
-    import type { IconKey } from './iconTypes';
+	import type { IconName } from './iconTypes';
 
-	export let key: IconKey;
+	export let name: IconName;
 
-	const svgRaw = iconExports[key];
+	const svgRaw = iconExports[name];
+	let dummyNode: HTMLDivElement;
+
+	onMount(() => {
+		if (!svgRaw) return;
+
+		const svgEl = new DOMParser().parseFromString(svgRaw, 'text/html').querySelector('svg');
+
+		Object.entries($$restProps).forEach(([key, value]) => {
+			svgEl.setAttribute(key, value);
+		});
+		dummyNode.replaceWith(svgEl);
+	});
 </script>
 
 {#if svgRaw}
 	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-	{@html svgRaw}
+	<div bind:this={dummyNode}></div>
 {:else}
 	<img style="width:fit-content; height:fit-content;" src="#" alt="" />
 {/if}
@@ -60,7 +73,7 @@ async function genSvelteHelper(rootPath: string) {
 async function genTypesFile(rootPath: string) {
   const typesContent = `import { iconExports } from './iconExports';
   
-export type IconKey = keyof typeof iconExports;
+export type IconName = keyof typeof iconExports;
 `;
 
   await Deno.writeTextFile(`${rootPath}/iconTypes.ts`, typesContent);
